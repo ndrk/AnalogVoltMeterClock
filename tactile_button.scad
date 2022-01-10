@@ -1,0 +1,20 @@
+BUTTON_BODY_HEIGHT  = 3.98;
+BUTTON_BODY_LENGTH  = 6.08;
+BUTTON_BODY_WIDTH   = BUTTON_BODY_LENGTH;
+BUTTON_DIAMETER1    = 4;
+BUTTON_DIAMETER2    = 3.5;
+BUTTON_HEIGHT  = 8.25;
+
+
+//tactileButton();
+
+module tactileButton() {
+  translate([-BUTTON_BODY_WIDTH/2,-BUTTON_BODY_LENGTH/2,-BUTTON_BODY_HEIGHT])
+    union() {
+      color("Silver")
+        cube([BUTTON_BODY_WIDTH, BUTTON_BODY_LENGTH, BUTTON_BODY_HEIGHT], false);
+      color("Black")
+        translate([BUTTON_BODY_WIDTH/2, BUTTON_BODY_LENGTH/2, BUTTON_BODY_HEIGHT])
+          cylinder(d1=BUTTON_DIAMETER1, d2=BUTTON_DIAMETER2, h=BUTTON_HEIGHT, $fn=20);
+    }
+}

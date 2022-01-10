@@ -1,7 +1,10 @@
+include <tactile_button.scad>;
+
+
 explodeView     = 0;    // 0=Normal, 1=Exploded
 EXPLODE_WIDTH   = 40;
 
-RENDER_MODE     = 0;  // 1-3=Cylinders, 4-6=Backplates, 7=OuterSpacer, 8=InnerSpacer
+RENDER_MODE     = 0;  // 0=Full Model, 1-3=Cylinders, 4-6=Backplates, 7=OuterSpacer, 8=InnerSpacer
 
 showBodies      = false;
 showSpacers     = false;
@@ -31,7 +34,7 @@ BODY_LENGTH = 80;
 BODY_WIDTH = METER_FLANGE_DIAMETER + 2*BODY_RADIUS;
 WALL_THICKNESS = 10;
 FOOT_WIDTH = 30;
-FOOT_LENGTH = 50;
+FOOT_LENGTH = 60;
 FOOT_HEIGHT = 25;
 FOOT_ANGLE = 15;
 FOOT_RADIUS = 3;
@@ -41,7 +44,7 @@ BACKPLATE_MOUNT_WIDTH = BODY_WIDTH;
 BACKPLATE_MOUNT_HEIGHT = 20;
 BACKPLATE_MOUNT_THICKNESS = 10;
 BACKPLATE_MOUNT_SCREW_HOLE_DIAMETER = 3.5;
-BACKPLATE_MOUNT_SCREW_HOLE_OFFSET = BODY_WIDTH/2-13;
+BACKPLATE_MOUNT_SCREW_HOLE_OFFSET = BODY_WIDTH/2-15;
 BACKPLATE_CLEARANCE = 0.5;
 BACKPLATE_WIDTH = BODY_WIDTH-(2*WALL_THICKNESS)-BACKPLATE_CLEARANCE;
 BACKPLATE_THICKNESS = 3;
@@ -50,16 +53,16 @@ BACKPLATE_SCREW_HOLE_OFFSET = BACKPLATE_MOUNT_SCREW_HOLE_OFFSET;
 LOUVER_LENGTH = BACKPLATE_WIDTH*0.85;
 LOUVER_WIDTH = 3;
 LOUVER_SPACING = 6;
-BUTTON_HOLE_DIAMETER = 3;
-BUTTON_HOLE_SPACING = 20;
-BUTTON_HOLE_OFFSET = 20;
+BUTTON_HOLE_DIAMETER = BUTTON_DIAMETER1+1;
+BUTTON_HOLE_SPACING = 30;
+BUTTON_HOLE_OFFSET = 17;
 //POWER_HOLE_LENGTH = 5;
 //POWER_HOLE_WIDTH = 10;
 POWER_JACK_HOLE_DIAMETER = 11;
 POWER_HOLE_OFFSET = -17;
 
 // Connectors between Volt Meter Housings
-SPACE_BETWEEN_CYLINDERS = 10;
+SPACE_BETWEEN_CYLINDERS = 5;
 CYLINDER_SPACING = BODY_WIDTH+SPACE_BETWEEN_CYLINDERS;
 CONNECTOR_HEIGHT = 30;
 CONNECTOR_LENGTH = 35;
@@ -70,8 +73,9 @@ CONNECTOR_SCREW_DIAMETER = 4;
 CONNECTOR_SCREW_SPACING = 20;
 
 
-
-$fn = 200;
+//$fn = 40;
+$fa = 1;
+$fs = 1;
 
 
 rotate([90-FOOT_ANGLE,0,0])
@@ -136,16 +140,16 @@ module createSpacers() {
     if ((RENDER_MODE==0 && showSpacers) || RENDER_MODE==7)
       createOuterSpacer(0+xOffset/2,0,SPACER_OFFSET);
     if ((RENDER_MODE==0 && showSpacers) || RENDER_MODE==8)
-      createInnerSpacer(0,0,SPACER_OFFSET,left=true);
+      createInnerSpacer(0-xOffset/2,0,SPACER_OFFSET,left=true);
     if (RENDER_MODE==0 && showSpacers)
-      createInnerSpacer(0,0,SPACER_OFFSET,left=false);
+      createInnerSpacer(0-xOffset*1.5,0,SPACER_OFFSET,left=false);
 
     if (RENDER_MODE==0 && showSpacers)
-      createOuterSpacer(CYLINDER_SPACING+xOffset/2,0,SPACER_OFFSET);
+      createOuterSpacer(CYLINDER_SPACING+xOffset*1.5,0,SPACER_OFFSET);
     if (RENDER_MODE==0 && showSpacers)
-      createInnerSpacer(CYLINDER_SPACING,0,SPACER_OFFSET,left=true);
+      createInnerSpacer(CYLINDER_SPACING+xOffset/2,0,SPACER_OFFSET,left=true);
     if (RENDER_MODE==0 && showSpacers)
-      createInnerSpacer(-CYLINDER_SPACING,0,SPACER_OFFSET,left=false);
+      #createInnerSpacer(-CYLINDER_SPACING-xOffset*2.5,0,SPACER_OFFSET,left=false);
   }
 }
 
@@ -154,7 +158,7 @@ module createInnerSpacer(X, Y, Z, left=true) {
   	translate([X,Y,Z])
   	    intersection() {
 	        translate([(BODY_WIDTH-2*WALL_THICKNESS)/2-INNER_CONNECTOR_WIDTH,-CONNECTOR_HEIGHT/2,0])
-            SmoothCube([INNER_CONNECTOR_WIDTH,CONNECTOR_HEIGHT,CONNECTOR_LENGTH], 3);
+            SmoothCube([INNER_CONNECTOR_WIDTH+0,CONNECTOR_HEIGHT,CONNECTOR_LENGTH], 1);
 	        translate([0,0,0])
             createInnerBody();
         }
@@ -164,7 +168,7 @@ module createInnerSpacer(X, Y, Z, left=true) {
           translate([X,Y,Z])
               intersection() {
                 translate([(BODY_WIDTH-2*WALL_THICKNESS)/2-INNER_CONNECTOR_WIDTH,-CONNECTOR_HEIGHT/2,0])
-                  SmoothCube([INNER_CONNECTOR_WIDTH,CONNECTOR_HEIGHT,CONNECTOR_LENGTH], 3);
+                  SmoothCube([INNER_CONNECTOR_WIDTH+0,CONNECTOR_HEIGHT,CONNECTOR_LENGTH], 1);
                 translate([0,0,0])
                   createInnerBody();
               }
@@ -194,55 +198,55 @@ module createBodies() {
   if ((RENDER_MODE==0 && showBodies) || RENDER_MODE==2)
     createBody(CYLINDER_SPACING+xOffset, 0, 0);
   if ((RENDER_MODE==0 && showBodies) || RENDER_MODE==3)
-    createBody((CYLINDER_SPACING+xOffset)*2, 0, 0);
+    #createBody((CYLINDER_SPACING+xOffset)*2, 0, 0);
 }
 
 module createBackplates() {
   xOffset = explodeView*EXPLODE_WIDTH;
 
   if ((RENDER_MODE==0 && showBackplates) || RENDER_MODE==4)
-    createBackplate(0, 0, 0, power=false, buttons=true, buttonLabels=["+","-"]);
+    createBackplate(0, 0, -xOffset, power=false, buttons=true, buttonLabels=["+","-"]);
 
   if ((RENDER_MODE==0 && showBackplates) || RENDER_MODE==5)
-    createBackplate(CYLINDER_SPACING+xOffset, 0, 0, power=true, buttons=true, buttonLabels=["H","M"]);
+    createBackplate(CYLINDER_SPACING+xOffset, 0, -xOffset, power=false, buttons=true, buttonLabels=["H","M"]);
 
   if ((RENDER_MODE==0 && showBackplates) || RENDER_MODE==6)
-    createBackplate((CYLINDER_SPACING+xOffset)*2, 0, 0, power=false, buttons=true, buttonLabels=["1","2"]);
+    #createBackplate((CYLINDER_SPACING+xOffset)*2, 0, -xOffset, power=true, buttons=true, buttonLabels=["1","2"]);
 }
 
 module createBody(X, Y, Z) {
   meterXOffset = explodeView*(METER_BODY_DEPTH + EXPLODE_WIDTH);
 
 	translate([X,Y,Z]) {
-        color("Grey") {
-          union() {
-              difference() {
-                  createOuterBody(rounded=true);
+    color("Grey") {
+      union() {
+        difference() {
+          createOuterBody(rounded=true);
 
-                  createInnerBody();
+          createInnerBody();
 
-                  rotate([0,0,0])
-                      translate([0,METER_HOLE_OFFSET,BODY_LENGTH-METER_SCREW_HOLE_DEPTH])
-                          cylinder(d=METER_SCREW_HOLE_DIAMETER, h=METER_SCREW_HOLE_DEPTH);
+          rotate([0,0,0])
+            translate([0,METER_HOLE_OFFSET,BODY_LENGTH-METER_SCREW_HOLE_DEPTH])
+              cylinder(d=METER_SCREW_HOLE_DIAMETER, h=METER_SCREW_HOLE_DEPTH);
 
-                  rotate([0,0,120])
-                      translate([0,METER_HOLE_OFFSET,BODY_LENGTH-METER_SCREW_HOLE_DEPTH])
-                          cylinder(d=METER_SCREW_HOLE_DIAMETER, h=METER_SCREW_HOLE_DEPTH);
+          rotate([0,0,120])
+            translate([0,METER_HOLE_OFFSET,BODY_LENGTH-METER_SCREW_HOLE_DEPTH])
+              cylinder(d=METER_SCREW_HOLE_DIAMETER, h=METER_SCREW_HOLE_DEPTH);
 
-                  rotate([0,0,-120])
-                      translate([0,METER_HOLE_OFFSET,BODY_LENGTH-METER_SCREW_HOLE_DEPTH])
-                          cylinder(d=METER_SCREW_HOLE_DIAMETER, h=METER_SCREW_HOLE_DEPTH);
-              }
-
-              createFoot();
-
-              rotate([0,0,0])
-                  createBackplateMount();
-
-              rotate([0,0,180])
-                  createBackplateMount();
-          };
+          rotate([0,0,-120])
+            translate([0,METER_HOLE_OFFSET,BODY_LENGTH-METER_SCREW_HOLE_DEPTH])
+              cylinder(d=METER_SCREW_HOLE_DIAMETER, h=METER_SCREW_HOLE_DEPTH);
         }
+
+        createFoot();
+
+        rotate([0,0,0])
+            createBackplateMount();
+
+        rotate([0,0,180])
+            createBackplateMount();
+      }
+    }
 	}
 }
 
@@ -273,10 +277,10 @@ module createBackplateMount() {
 
 module createFoot() {
   difference() {
-  	translate([-FOOT_WIDTH/2,-BODY_WIDTH/2+FOOT_RADIUS+1,FOOT_LENGTH+10])
+  	translate([-FOOT_WIDTH/2,-BODY_WIDTH/2+10,FOOT_LENGTH+10])
       rotate([FOOT_ANGLE,0,0])
         rotate([-90,0,-90])
-          SmoothCube([FOOT_HEIGHT+FOOT_RADIUS,FOOT_LENGTH,FOOT_WIDTH],FOOT_RADIUS);
+          SmoothCube([FOOT_HEIGHT+FOOT_RADIUS+10,FOOT_LENGTH,FOOT_WIDTH],FOOT_RADIUS);
     createOuterBody(rounded=false);
   }
 }
@@ -327,66 +331,80 @@ module roundedCylinder(diam, hgt, radius) {
 
 
 module createBackplate(X, Y, Z, louvers=true, buttons=true, power=true, buttons=true, buttonLabels) {
-  color("Grey") {
-    translate([X,Y,Z])
-    	difference() {
-    		// Plate
-    		cylinder(h=BACKPLATE_THICKNESS, d=BACKPLATE_WIDTH);
+  xOffset = explodeView*EXPLODE_WIDTH/2;
 
-    		// Louver
-    		translate([-LOUVER_LENGTH/2+LOUVER_SPACING/2,-LOUVER_WIDTH/2+LOUVER_SPACING,BACKPLATE_THICKNESS+1])
-    			rotate([0,90,0])
-    				roundedCube(length=LOUVER_LENGTH-LOUVER_SPACING, width=LOUVER_WIDTH, height=BACKPLATE_THICKNESS+2, radius=1);
+  translate([X,Y,Z]) {
+  	difference() {
+  		// Plate
+      color("Grey")
+  		  cylinder(h=BACKPLATE_THICKNESS, d=BACKPLATE_WIDTH);
 
-    		// Louver
-    		translate([-LOUVER_LENGTH/2,-LOUVER_WIDTH/2,BACKPLATE_THICKNESS+1])
-    			rotate([0,90,0])
-    				roundedCube(length=LOUVER_LENGTH, width=LOUVER_WIDTH, height=BACKPLATE_THICKNESS+2, radius=1);
+  		// Louver
+  		translate([-LOUVER_LENGTH/2+LOUVER_SPACING/2,-LOUVER_WIDTH/2+LOUVER_SPACING,BACKPLATE_THICKNESS+1])
+  			rotate([0,90,0])
+  				roundedCube(length=LOUVER_LENGTH-LOUVER_SPACING, width=LOUVER_WIDTH, height=BACKPLATE_THICKNESS+2, radius=1);
 
-    		// Louver
-    		translate([-LOUVER_LENGTH/2+LOUVER_SPACING/2,-LOUVER_WIDTH/2-LOUVER_SPACING,BACKPLATE_THICKNESS+1])
-    			rotate([0,90,0])
-    				roundedCube(length=LOUVER_LENGTH-LOUVER_SPACING, width=LOUVER_WIDTH, height=BACKPLATE_THICKNESS+2, radius=1);
+  		// Louver
+  		translate([-LOUVER_LENGTH/2,-LOUVER_WIDTH/2,BACKPLATE_THICKNESS+1])
+  			rotate([0,90,0])
+  				roundedCube(length=LOUVER_LENGTH, width=LOUVER_WIDTH, height=BACKPLATE_THICKNESS+2, radius=1);
 
-        // Mounting Screw Hole
-        rotate([0,0,0])
-          translate([0,BACKPLATE_SCREW_HOLE_OFFSET,-1])
-            cylinder(d=BACKPLATE_SCREW_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+20);
+  		// Louver
+  		translate([-LOUVER_LENGTH/2+LOUVER_SPACING/2,-LOUVER_WIDTH/2-LOUVER_SPACING,BACKPLATE_THICKNESS+1])
+  			rotate([0,90,0])
+  				roundedCube(length=LOUVER_LENGTH-LOUVER_SPACING, width=LOUVER_WIDTH, height=BACKPLATE_THICKNESS+2, radius=1);
 
-        // Mounting Screw Hole
-        rotate([0,0,180])
-          translate([0,BACKPLATE_SCREW_HOLE_OFFSET,-1])
-            cylinder(d=BACKPLATE_SCREW_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+20);
+      // Mounting Screw Hole
+      rotate([0,0,0])
+        translate([0,BACKPLATE_SCREW_HOLE_OFFSET,-1])
+          cylinder(d=BACKPLATE_SCREW_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+20);
 
-        if (buttons) {
-          translate([3.1+BUTTON_HOLE_SPACING/2,10,-BACKPLATE_THICKNESS/2])
-            linear_extrude(height = BACKPLATE_THICKNESS)
-              rotate([0,180,0])
+      // Mounting Screw Hole
+      rotate([0,0,180])
+        translate([0,BACKPLATE_SCREW_HOLE_OFFSET,-1])
+          cylinder(d=BACKPLATE_SCREW_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+20);
+
+      if (buttons) {
+        translate([-4+BUTTON_HOLE_SPACING/2,14,-BACKPLATE_THICKNESS/2])
+          linear_extrude(height = BACKPLATE_THICKNESS)
+            rotate([0,180,0])
               text(buttonLabels[0], font="Courier:style=Bold", size=7, direction = "ltr", spacing=0);
 
-          translate([3.1-BUTTON_HOLE_SPACING/2,10,-BACKPLATE_THICKNESS/2])
-            linear_extrude(height = BACKPLATE_THICKNESS)
-              rotate([0,180,0])
+        translate([10.5-BUTTON_HOLE_SPACING/2,14,-BACKPLATE_THICKNESS/2])
+          linear_extrude(height = BACKPLATE_THICKNESS)
+            rotate([0,180,0])
               text(buttonLabels[1], font="Courier:style=Bold", size=7, direction = "ltr", spacing=0);
 
-      		// Push Button Hole
-      		translate([-BUTTON_HOLE_SPACING/2,BUTTON_HOLE_OFFSET,-1])
-      			rotate([0,0,0])
-      				cylinder(d=BUTTON_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+2);
+    		// Push Button Hole
+    		translate([-BUTTON_HOLE_SPACING/2,BUTTON_HOLE_OFFSET,-1])
+    			rotate([0,0,0])
+    				cylinder(d=BUTTON_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+2);
 
-      		// Push Button Hole
-      		translate([BUTTON_HOLE_SPACING/2,BUTTON_HOLE_OFFSET,-1])
-      			rotate([0,0,0])
-      				cylinder(d=BUTTON_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+2);
-        }
+    		// Push Button Hole
+    		translate([BUTTON_HOLE_SPACING/2,BUTTON_HOLE_OFFSET,-1])
+    			rotate([0,0,0])
+    				cylinder(d=BUTTON_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+2);
+      }
 
-    		// Power Jack Hole
-    		if (power)
-          translate([0,POWER_HOLE_OFFSET,-1])
-            rotate([0,0,90])
-              cylinder(d=POWER_JACK_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+2);
-    					//roundedCube(length=POWER_HOLE_LENGTH, width=POWER_HOLE_WIDTH, height=BACKPLATE_THICKNESS+2, radius=1);
-    	}
+  		// Power Jack Hole
+  		if (power)
+        translate([0,POWER_HOLE_OFFSET,-1])
+          rotate([0,0,90])
+            cylinder(d=POWER_JACK_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+2);
+  					//roundedCube(length=POWER_HOLE_LENGTH, width=POWER_HOLE_WIDTH, height=BACKPLATE_THICKNESS+2, radius=1);
+  	}
+
+    // Button
+    if (buttons && RENDER_MODE==0)
+      translate([-BUTTON_HOLE_SPACING/2,BUTTON_HOLE_OFFSET,BACKPLATE_THICKNESS+xOffset])
+        rotate([180,0,0])
+          tactileButton();
+
+    // Button
+    if (buttons && RENDER_MODE==0)
+      translate([BUTTON_HOLE_SPACING/2,BUTTON_HOLE_OFFSET,BACKPLATE_THICKNESS+xOffset])
+        rotate([180,0,0])
+          tactileButton();
   }
 }
 
