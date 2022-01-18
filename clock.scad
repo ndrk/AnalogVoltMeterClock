@@ -1,32 +1,22 @@
+include <volt_meter.scad>;
 include <tactile_button.scad>;
+use <smooth_prim.scad>;
 
 
-explodeView     = 0;    // 0=Normal, 1=Exploded
-EXPLODE_WIDTH   = 40;
+explodeView     = 0;  // 0=Normal, 1=Exploded
+EXPLODE_WIDTH   = 40; // How far apart to explode most parts
 
 RENDER_MODE     = 0;  // 0=Full Model, 1-3=Cylinders, 4-6=Backplates, 7=OuterSpacer, 8=InnerSpacer
 
-showBodies      = false;
+showBodies      = false;  // Define which parts of the model to render
 showSpacers     = false;
 showBackplates  = false;
 showMeters      = false;
 
-showBodies      = true;
-showSpacers     = true;
+//showBodies      = true;
+//showSpacers     = true;
 showBackplates  = true;
-showMeters      = true;
-
-// Analog Volt Meter Dimensions
-METER_FLANGE_DIAMETER = 88;
-METER_FLANGE_THICKNESS = 4;
-METER_BODY_DIAMETER = 69;
-METER_BODY_DEPTH = 40;
-METER_HOLE_DIAMETER = 3.5;
-METER_SCREW_HOLE_DIAMETER = 2;
-METER_SCREW_HOLE_DEPTH = 10;
-METER_HOLE_OFFSET = METER_FLANGE_DIAMETER/2-5;
-METER_FACE_DIAMETER = 62;
-METER_FACE_DEPTH = 4;
+//showMeters      = true;
 
 // Volt Meter Cylindrical Housing
 BODY_RADIUS = 1;
@@ -56,13 +46,16 @@ LOUVER_SPACING = 6;
 BUTTON_HOLE_DIAMETER = BUTTON_DIAMETER1+1;
 BUTTON_HOLE_SPACING = 30;
 BUTTON_HOLE_OFFSET = 17;
+BUTTON_LIP_WIDTH = 1;
+BUTTON_LIP_HEIGHT = 1;
+BUTTON_LIP_CLEARANCE = 0.2;
 //POWER_HOLE_LENGTH = 5;
 //POWER_HOLE_WIDTH = 10;
 POWER_JACK_HOLE_DIAMETER = 11;
 POWER_HOLE_OFFSET = -17;
 
 // Connectors between Volt Meter Housings
-SPACE_BETWEEN_CYLINDERS = 5;
+SPACE_BETWEEN_CYLINDERS = 5;  // Distance between outside edges of adjacent meter housings
 CYLINDER_SPACING = BODY_WIDTH+SPACE_BETWEEN_CYLINDERS;
 CONNECTOR_HEIGHT = 30;
 CONNECTOR_LENGTH = 35;
@@ -78,6 +71,7 @@ $fa = 1;
 $fs = 1;
 
 
+// Create the clock
 rotate([90-FOOT_ANGLE,0,0])
   difference() {
   	union() {
@@ -87,10 +81,14 @@ rotate([90-FOOT_ANGLE,0,0])
       createMeters();
   	}
 
+    // Cut holes through the bodies and connectors for bolts and wires
     createWireRaces();
   }
 
-
+/*
+  This function creates 3 cylinders - 1 for a wire raceway
+  and 2 for bolts to hold adjacent volt meter housings together.
+*/
 module createWireRaces() {
   xOffset = explodeView*EXPLODE_WIDTH;
 
@@ -101,12 +99,14 @@ module createWireRaces() {
     }
   }
 
+  // Bolt Hole through the Spacers and Bodies
   translate([0,0,SPACER_OFFSET+CONNECTOR_LENGTH/2+CONNECTOR_SCREW_SPACING/2]) {
     rotate([0,90,0]) {
       cylinder(h=CYLINDER_SPACING+xOffset,d=CONNECTOR_SCREW_DIAMETER,center=false);
     }
   }
 
+  // Bolt Hole through the Spacers and Bodies
   translate([0,0,SPACER_OFFSET+CONNECTOR_LENGTH/2-CONNECTOR_SCREW_SPACING/2]) {
     rotate([0,90,0]) {
       cylinder(h=CYLINDER_SPACING+xOffset,d=CONNECTOR_SCREW_DIAMETER,center=false);
@@ -120,12 +120,14 @@ module createWireRaces() {
     }
   }
 
+  // Bolt Hole through the Spacers and Bodies
   translate([CYLINDER_SPACING+xOffset,0,SPACER_OFFSET+CONNECTOR_LENGTH/2+CONNECTOR_SCREW_SPACING/2]) {
     rotate([0,90,0]) {
       cylinder(h=CYLINDER_SPACING+xOffset,d=CONNECTOR_SCREW_DIAMETER,center=false);
     }
   }
 
+  // Bolt Hole through the Spacers and Bodies
   translate([CYLINDER_SPACING+xOffset,0,SPACER_OFFSET+CONNECTOR_LENGTH/2-CONNECTOR_SCREW_SPACING/2]) {
     rotate([0,90,0]) {
       cylinder(h=CYLINDER_SPACING+xOffset,d=CONNECTOR_SCREW_DIAMETER,center=false);
@@ -133,6 +135,11 @@ module createWireRaces() {
   }
 }
 
+/*
+  This function generates the 2 sets of connectors/spacers that hold adjacent
+  volt meter bodies together. The "Outer" spacer is the one between the bodies,
+  and the "Inner" spacers are the ones inside the bodies.
+*/
 module createSpacers() {
   xOffset = explodeView*EXPLODE_WIDTH;
 
@@ -153,6 +160,11 @@ module createSpacers() {
   }
 }
 
+/*
+  Creates either a left or right "Inner" spacer. These are
+  the pieces that are inside the volt meter housing that we bolt
+  against to assemble the clock.
+*/
 module createInnerSpacer(X, Y, Z, left=true) {
   if (left)
   	translate([X,Y,Z])
@@ -174,6 +186,10 @@ module createInnerSpacer(X, Y, Z, left=true) {
               }
 }
 
+/* 
+  Creates an "Outer" spacer. This is the piece that goes between
+  the volt meter housings to join them together.
+*/
 module createOuterSpacer(X, Y, Z) {
 	translate([X,Y,Z]) {
 	    difference() {
@@ -190,6 +206,9 @@ module createOuterSpacer(X, Y, Z) {
 	};
 }
 
+/* 
+  Instantiates the 3 volt meter housings
+*/
 module createBodies() {
 	xOffset = explodeView*EXPLODE_WIDTH;
 
@@ -201,6 +220,9 @@ module createBodies() {
     #createBody((CYLINDER_SPACING+xOffset)*2, 0, 0);
 }
 
+/* 
+  Instantiates the 3 volt meter housing backplates.
+*/
 module createBackplates() {
   xOffset = explodeView*EXPLODE_WIDTH;
 
@@ -214,6 +236,9 @@ module createBackplates() {
     #createBackplate((CYLINDER_SPACING+xOffset)*2, 0, -xOffset, power=true, buttons=true, buttonLabels=["1","2"]);
 }
 
+/* 
+  This function creates a volt meter housing.
+*/
 module createBody(X, Y, Z) {
   meterXOffset = explodeView*(METER_BODY_DEPTH + EXPLODE_WIDTH);
 
@@ -250,6 +275,9 @@ module createBody(X, Y, Z) {
 	}
 }
 
+/*
+  This function creates the overall volt meter housing cylinder.
+*/
 module createOuterBody(rounded=true) {
 	if (rounded)
 		roundedCylinder(hgt=BODY_LENGTH, diam=BODY_WIDTH, radius=BODY_RADIUS);
@@ -257,11 +285,19 @@ module createOuterBody(rounded=true) {
 		cylinder(h=BODY_LENGTH, d=BODY_WIDTH);
 }
 
+/*
+  This function generates the interior portion of the vold meter
+  housing that will be hollowed out of it.
+*/
 module createInnerBody() {
 	translate([0,0,-0.5])
 		cylinder(h=BODY_LENGTH+1, d=BODY_WIDTH-(2*WALL_THICKNESS));
 }
 
+/*
+  Create a surface for the backplate to rest against and be
+  screwed to.
+*/
 module createBackplateMount() {
   difference() {
     intersection() {
@@ -275,6 +311,10 @@ module createBackplateMount() {
   }
 }
 
+/*
+  Generates a solid food piece that is added to the volt meter
+  housing to angle it upwards and give it something to rest on.
+*/
 module createFoot() {
   difference() {
   	translate([-FOOT_WIDTH/2,-BODY_WIDTH/2+10,FOOT_LENGTH+10])
@@ -285,6 +325,10 @@ module createFoot() {
   }
 }
 
+/*
+  This function creates a cube that has a radius
+  on 4 of its edges.
+*/
 module roundedCube(length, width, height, radius) {
 	hull() {
 		rotate([0,90,0]) {
@@ -310,6 +354,10 @@ module roundedCube(length, width, height, radius) {
 	}
 }
 
+/*
+  Generates a cylinder that has a radius on its edges
+  on both ends.
+  */
 module roundedCylinder(diam, hgt, radius) {
 	union() {
 		translate([0,0,radius])
@@ -329,7 +377,10 @@ module roundedCylinder(diam, hgt, radius) {
 	}
 }
 
-
+/*
+  Generate a backplate. The backplate is configurable. It can be with
+  or without louvers, buttons, button labels or a hole for the power cord.
+*/
 module createBackplate(X, Y, Z, louvers=true, buttons=true, power=true, buttons=true, buttonLabels) {
   xOffset = explodeView*EXPLODE_WIDTH/2;
 
@@ -365,22 +416,24 @@ module createBackplate(X, Y, Z, louvers=true, buttons=true, power=true, buttons=
           cylinder(d=BACKPLATE_SCREW_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+20);
 
       if (buttons) {
+        // Left Push Button Label
         translate([-4+BUTTON_HOLE_SPACING/2,14,-BACKPLATE_THICKNESS/2])
           linear_extrude(height = BACKPLATE_THICKNESS)
             rotate([0,180,0])
               text(buttonLabels[0], font="Courier:style=Bold", size=7, direction = "ltr", spacing=0);
 
+        // Right Push Button Label
         translate([10.5-BUTTON_HOLE_SPACING/2,14,-BACKPLATE_THICKNESS/2])
           linear_extrude(height = BACKPLATE_THICKNESS)
             rotate([0,180,0])
               text(buttonLabels[1], font="Courier:style=Bold", size=7, direction = "ltr", spacing=0);
 
-    		// Push Button Hole
+    		// Left Push Button Hole
     		translate([-BUTTON_HOLE_SPACING/2,BUTTON_HOLE_OFFSET,-1])
     			rotate([0,0,0])
     				cylinder(d=BUTTON_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+2);
 
-    		// Push Button Hole
+    		// Right Push Button Hole
     		translate([BUTTON_HOLE_SPACING/2,BUTTON_HOLE_OFFSET,-1])
     			rotate([0,0,0])
     				cylinder(d=BUTTON_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+2);
@@ -394,20 +447,50 @@ module createBackplate(X, Y, Z, louvers=true, buttons=true, power=true, buttons=
   					//roundedCube(length=POWER_HOLE_LENGTH, width=POWER_HOLE_WIDTH, height=BACKPLATE_THICKNESS+2, radius=1);
   	}
 
-    // Button
-    if (buttons && RENDER_MODE==0)
+    if (buttons && RENDER_MODE==0) {
+      // Button
       translate([-BUTTON_HOLE_SPACING/2,BUTTON_HOLE_OFFSET,BACKPLATE_THICKNESS+xOffset])
         rotate([180,0,0])
           tactileButton();
 
-    // Button
-    if (buttons && RENDER_MODE==0)
+      // Button Alignment Lip
+      translate([-BUTTON_HOLE_SPACING/2,BUTTON_HOLE_OFFSET,BACKPLATE_THICKNESS+BUTTON_LIP_HEIGHT/2]) {
+        outerSize = BUTTON_BODY_LENGTH+2*BUTTON_LIP_WIDTH+BUTTON_LIP_CLEARANCE;
+        innerSize = BUTTON_BODY_LENGTH+BUTTON_LIP_CLEARANCE;
+
+        difference() {
+          translate([-outerSize/2,-outerSize/2,-BUTTON_LIP_HEIGHT-0.5])
+            SmoothCube([outerSize, outerSize,BUTTON_LIP_HEIGHT*2], 0.5);
+          translate([0,-0.1,0])
+            cube([innerSize, innerSize,BUTTON_LIP_HEIGHT+0.2], center=true);
+        }
+      }
+
+      // Button
       translate([BUTTON_HOLE_SPACING/2,BUTTON_HOLE_OFFSET,BACKPLATE_THICKNESS+xOffset])
         rotate([180,0,0])
           tactileButton();
+
+      // Button Alignment Lip
+      translate([BUTTON_HOLE_SPACING/2,BUTTON_HOLE_OFFSET,BACKPLATE_THICKNESS+BUTTON_LIP_HEIGHT/2]) {
+        outerSize = BUTTON_BODY_LENGTH+2*BUTTON_LIP_WIDTH+BUTTON_LIP_CLEARANCE;
+        innerSize = BUTTON_BODY_LENGTH+BUTTON_LIP_CLEARANCE;
+
+        difference() {
+          translate([-outerSize/2,-outerSize/2,-BUTTON_LIP_HEIGHT-0.5])
+            SmoothCube([outerSize, outerSize,BUTTON_LIP_HEIGHT*2], 0.5);
+          translate([0,-0.1,0])
+            cube([innerSize, innerSize,BUTTON_LIP_HEIGHT+0.2], center=true);
+        }
+      }
+    }
   }
 }
 
+/*
+  Generate all 3 volt meters. These are for visual purposes only.
+  They will not be used in a final rendering.
+*/
 module createMeters() {
   xOffset = explodeView*EXPLODE_WIDTH;
   meterXOffset = explodeView*(METER_BODY_DEPTH + EXPLODE_WIDTH);
@@ -419,108 +502,3 @@ module createMeters() {
 
   }
 }
-
-module createMeter(X, Y, Z) {
-  translate([X,Y,Z])
-    difference() {
-        union() {
-            color("White")
-                difference() {
-                    translate([0,0,METER_FACE_DEPTH])
-                        cylinder(d=METER_FACE_DIAMETER, h=METER_FACE_DEPTH);
-                    translate([-METER_FACE_DIAMETER/2,-METER_FACE_DIAMETER/2-7,METER_FACE_DEPTH-2])
-                        cube([METER_FACE_DIAMETER,METER_FACE_DIAMETER/3,METER_FACE_DEPTH+4], false);
-                }
-            color("Black")
-                cylinder(d=METER_FLANGE_DIAMETER, h=METER_FLANGE_THICKNESS);
-            color("Black")
-                translate([0,0,-METER_BODY_DEPTH])
-                    cylinder(d=METER_BODY_DIAMETER, h=METER_BODY_DEPTH);
-        }
-
-        rotate([0,0,0])
-            translate([0,METER_HOLE_OFFSET,-1])
-                cylinder(d=METER_HOLE_DIAMETER, h=METER_FLANGE_THICKNESS+2);
-
-        rotate([0,0,120])
-            translate([0,METER_HOLE_OFFSET,-1])
-                cylinder(d=METER_HOLE_DIAMETER, h=METER_FLANGE_THICKNESS+2);
-
-        rotate([0,0,-120])
-            translate([0,METER_HOLE_OFFSET,-1])
-                cylinder(d=METER_HOLE_DIAMETER, h=METER_FLANGE_THICKNESS+2);
-    }
-}
-
-module SmoothCube(size, smooth_rad) {
-  $fa = ($fa >= 12) ? 1 : $fa;
-  $fs = ($fs >= 2) ? 0.4 : $fs;
-
-  size = is_num(size) ? [size, size, size] : size;
-  smooth_rad = is_num(smooth_rad) ? [smooth_rad, smooth_rad, smooth_rad] :
-    smooth_rad;
-  smooth_base = smooth_rad[0];
-  scales = smooth_rad / smooth_base;
-
-  scalex = scales[0] * ((smooth_rad[0] < size[0]/2) ? 1 : size[0]/(2*smooth_rad[0]));
-  scaley = scales[1] * ((smooth_rad[1] < size[1]/2) ? 1 : size[1]/(2*smooth_rad[1]));
-  scalez = scales[2] * ((smooth_rad[2] < size[2]/2) ? 1 : size[2]/(2*smooth_rad[2]));
-  smoothx = smooth_rad[0] * scalex / scales[0];
-  smoothy = smooth_rad[1] * scaley / scales[1];
-  smoothz = smooth_rad[2] * scalez / scales[2];
-
-  hull() {
-    translate([smoothx, smoothy, smoothz])
-      scale([scalex, scaley, scalez])
-      sphere(r=smooth_base);
-    translate([size[0]-smoothx, smoothy, smoothz])
-      scale([scalex, scaley, scalez])
-      sphere(r=smooth_base);
-    translate([smoothx, size[1]-smoothy, smoothz])
-      scale([scalex, scaley, scalez])
-      sphere(r=smooth_base);
-    translate([smoothx, smoothy, size[2]-smoothz])
-      scale([scalex, scaley, scalez])
-      sphere(r=smooth_base);
-    translate([size[0]-smoothx, size[1]-smoothy, smoothz])
-      scale([scalex, scaley, scalez])
-      sphere(r=smooth_base);
-    translate([size[0]-smoothx, smoothy, size[2]-smoothz])
-      scale([scalex, scaley, scalez])
-      sphere(r=smooth_base);
-    translate([smoothx, size[1]-smoothy, size[2]-smoothz])
-      scale([scalex, scaley, scalez])
-      sphere(r=smooth_base);
-    translate([size[0]-smoothx, size[1]-smoothy, size[2]-smoothz])
-      scale([scalex, scaley, scalez])
-      sphere(r=smooth_base);
-  }
-}
-
-module SmoothXYCube(size, smooth_rad) {
-  $fa = ($fa >= 12) ? 1 : $fa;
-  $fs = ($fs >= 2) ? 0.4 : $fs;
-
-  size = is_num(size) ? [size, size, size] : size;
-
-  scalex = (smooth_rad < size[0]/2) ? 1 : size[0]/(2*smooth_rad);
-  scaley = (smooth_rad < size[1]/2) ? 1 : size[1]/(2*smooth_rad);
-  smoothx = smooth_rad * scalex;
-  smoothy = smooth_rad * scaley;
-
-  linear_extrude(size[2]) hull() {
-    translate([smoothx, smoothy])
-      scale([scalex, scaley])
-      circle(r=smooth_rad);
-    translate([size[0]-smoothx, smoothy])
-      scale([scalex, scaley])
-      circle(r=smooth_rad);
-    translate([smoothx, size[1]-smoothy])
-      scale([scalex, scaley])
-      circle(r=smooth_rad);
-    translate([size[0]-smoothx, size[1]-smoothy])
-      scale([scalex, scaley])
-      circle(r=smooth_rad);
-  }
-}
-
