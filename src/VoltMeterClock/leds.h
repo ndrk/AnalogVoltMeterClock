@@ -1,3 +1,23 @@
+#include <SoftwareSerial.h>
+
+
+SoftwareSerial mySerial(SerialRxPin, SerialTxPin); // RX, TX
+
+
+void SetupLEDSerial() {
+  mySerial.begin(38400);
+}
+
+void IncrementLED() {
+  mySerial.write("+x");
+}
+
+void DecrementLED() {
+  mySerial.write("-x");
+}
+
+
+/*
 #include <WS2812FX.h>
 
 #define LED_COUNT 3
@@ -16,4 +36,4 @@ void setupLEDs() {
 
 void updateLEDs() {
   ws2812fx.service();
-}
+}*/

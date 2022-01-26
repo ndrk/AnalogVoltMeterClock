@@ -14,6 +14,8 @@ static const int Minus_Button = 11;
 static const int One_Button = 12;
 static const int Two_Button = 13;
 
+static const int SerialRxPin = 2;
+static const int SerialTxPin = 3;
 
 static bool hourPressed = false;
 static bool minutePressed = false;

@@ -40,6 +40,8 @@ State* sAdjustMMin;
 State* sAdjustMMax;
 State* sAdjustSMin;
 State* sAdjustSMax;
+State* sIncrementLED;
+State* sDecrementLED;
 
 
 void stateInit() {
@@ -47,14 +49,14 @@ void stateInit() {
 }
 
 void stateWait() {
-  if(sMach.executeOnce) {
+  if (sMach.executeOnce) {
     Serial.println("stateWait");  
     calibrateMeters = true;
   }
 }
 
 void stateSetMin() {
-  if(sMach.executeOnce) {
+  if (sMach.executeOnce) {
     Serial.println("stateSetMin");
   }
   
@@ -65,7 +67,7 @@ void stateSetMin() {
 }
 
 void stateSetHour() {
-  if(sMach.executeOnce) {
+  if (sMach.executeOnce) {
     Serial.println("stateSetHour");
   }
   
@@ -76,7 +78,7 @@ void stateSetHour() {
 }
 
 void stateAdjustHMin() {
-  if(sMach.executeOnce) {
+  if (sMach.executeOnce) {
     while(twoPressed) {
       updateButtons();
       delay(10);
@@ -93,7 +95,7 @@ void stateAdjustHMin() {
 }
 
 void stateAdjustHMax() {
-  if(sMach.executeOnce) {
+  if (sMach.executeOnce) {
     while(twoPressed) {
       updateButtons();
       delay(10);
@@ -109,7 +111,7 @@ void stateAdjustHMax() {
 }
 
 void stateAdjustMMin() {
-  if(sMach.executeOnce) {
+  if (sMach.executeOnce) {
     while(twoPressed) {
       updateButtons();
       delay(10);
@@ -125,7 +127,7 @@ void stateAdjustMMin() {
 }
 
 void stateAdjustMMax() {
-  if(sMach.executeOnce) {
+  if (sMach.executeOnce) {
     while(twoPressed) {
       updateButtons();
       delay(10);
@@ -141,7 +143,7 @@ void stateAdjustMMax() {
 }
 
 void stateAdjustSMin() {
-  if(sMach.executeOnce) {
+  if (sMach.executeOnce) {
     while(twoPressed) {
       updateButtons();
       delay(10);
@@ -157,7 +159,7 @@ void stateAdjustSMin() {
 }
 
 void stateAdjustSMax() {
-  if(sMach.executeOnce) {
+  if (sMach.executeOnce) {
     while(twoPressed) {
       updateButtons();
       delay(10);
@@ -170,6 +172,18 @@ void stateAdjustSMax() {
     updateSMaxOffset(1);
   else if (minusPressed)
     updateSMaxOffset(-1);
+}
+
+void stateIncrementLED() {
+  if (sMach.executeOnce) {
+    // Send increment LED sequence to LED controller
+  }
+}
+
+void stateDecrementLED() {
+  if (sMach.executeOnce) {
+    // Send deccrement LED sequence to LED controller
+  }
 }
 
 bool trans_Init_Wait() {
@@ -253,6 +267,34 @@ bool trans_AdjustSMax_Wait() {
     return false;
 }
 
+bool trans_Wait_IncrementLED() {
+  if (plusPressed)
+    return true;
+  else
+    return false;  
+}
+
+bool trans_IncrementLED_Wait() {
+  if (!plusPressed)
+    return true;
+  else
+    return false;  
+}
+
+bool trans_Wait_DecrementLED() {
+  if (minusPressed)
+    return true;
+  else
+    return false;  
+}
+
+bool trans_DecrementLED_Wait() {
+  if (!minusPressed)
+    return true;
+  else
+    return false;  
+}
+
 void initStateMachine() {
   sMach = StateMachine();
   
@@ -266,11 +308,15 @@ void initStateMachine() {
   sAdjustMMax = sMach.addState(&stateAdjustMMax);
   sAdjustSMin = sMach.addState(&stateAdjustSMin);
   sAdjustSMax = sMach.addState(&stateAdjustSMax);
+  sIncrementLED = sMach.addState(&stateIncrementLED);
+  sDecrementLED = sMach.addState(&stateDecrementLED);
   
   sInit->addTransition(&trans_Init_Wait,sWait);
   sWait->addTransition(&trans_Wait_SetMin,sSetMin);
   sWait->addTransition(&trans_Wait_SetHour,sSetHour);
   sWait->addTransition(&trans_Wait_AdjustHMin,sAdjustHMin);
+  sWait->addTransition(&trans_Wait_IncrementLED,sIncrementLED);
+  sWait->addTransition(&trans_Wait_DecrementLED,sDecrementLED);
   sWait->addTransition(&trans_AdjustHMin_AdjustHMax,sAdjustHMax);
   sWait->addTransition(&trans_AdjustHMax_AdjustMMin,sAdjustMMin);
   sWait->addTransition(&trans_AdjustMMin_AdjustMMax,sAdjustMMax);
@@ -279,6 +325,8 @@ void initStateMachine() {
   sWait->addTransition(&trans_AdjustSMax_Wait,sWait);
   sSetMin->addTransition(&trans_SetMin_Wait,sWait);
   sSetHour->addTransition(&trans_SetHour_Wait,sWait);
+  sIncrementLED->addTransition(&trans_IncrementLED_Wait,sWait);
+  sDecrementLED->addTransition(&trans_DecrementLED_Wait,sWait);
 }
 
 void runStateMachine() {

@@ -17,13 +17,13 @@ struct Settings {
 
 static Settings settings;
 
-void readSettings(Settings* settings) {
-  EEPROM.get(SETTINGS_ADDR, *settings);
+void readSettings() {
+  EEPROM.get(SETTINGS_ADDR, settings);
   return;
 }
 
-void writeSettings(const Settings* settings) {
-  EEPROM.put(SETTINGS_ADDR, *settings);
+void writeSettings() {
+  EEPROM.put(SETTINGS_ADDR, settings);
 }
 
 void clearSettings() {
@@ -31,7 +31,7 @@ void clearSettings() {
     0,0,0,0,0,0 // HMS Offsets
   };
 
-  writeSettings(&settings);
+  writeSettings();
 }
 
 void updateHMinOffset(int change) {
@@ -44,7 +44,7 @@ void updateHMinOffset(int change) {
       --settings.HMinOffset;
   }
   
-  writeSettings(&settings);
+  writeSettings();
 }
 
 void updateHMaxOffset(int change) {
@@ -57,7 +57,7 @@ void updateHMaxOffset(int change) {
       --settings.HMaxOffset;
   }
   
-  writeSettings(&settings);
+  writeSettings();
 }
 
 void updateMMinOffset(int change) {
@@ -70,7 +70,7 @@ void updateMMinOffset(int change) {
       --settings.MMinOffset;
   }
   
-  writeSettings(&settings);
+  writeSettings();
 }
 
 void updateMMaxOffset(int change) {
@@ -83,7 +83,7 @@ void updateMMaxOffset(int change) {
       --settings.MMaxOffset;
   }
   
-  writeSettings(&settings);
+  writeSettings();
 }
 
 void updateSMinOffset(int change) {
@@ -96,7 +96,7 @@ void updateSMinOffset(int change) {
       --settings.SMinOffset;
   }
   
-  writeSettings(&settings);
+  writeSettings();
 }
 
 void updateSMaxOffset(int change) {
@@ -109,7 +109,7 @@ void updateSMaxOffset(int change) {
       --settings.SMaxOffset;
   }
   
-  writeSettings(&settings);
+  writeSettings();
 }
 
 #endif

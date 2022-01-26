@@ -9,7 +9,7 @@
 
 void tMetersCallback();
 void tButtonsCallback();
-void tLEDsCallback();
+//void tLEDsCallback();
 void tStateMachineCallback();
 
 #define TASK_MS_METERS 1000
@@ -19,9 +19,9 @@ Task tMeters(TASK_MS_METERS, TASK_FOREVER, &tMetersCallback);
 #define TASK_HZ_BUTTONS 1000/TASK_MS_BUTTONS
 Task tButtons(TASK_MS_BUTTONS, TASK_FOREVER, &tButtonsCallback);
 
-#define TASK_MS_LEDs 10
-#define TASK_HZ_LEDs 1000/TASK_MS_LEDs 
-Task tLEDs(TASK_MS_LEDs, TASK_FOREVER, &tLEDsCallback);
+//#define TASK_MS_LEDs 10
+//#define TASK_HZ_LEDs 1000/TASK_MS_LEDs 
+//Task tLEDs(TASK_MS_LEDs, TASK_FOREVER, &tLEDsCallback);
 
 #define TASK_MS_SMACH 100
 #define TASK_HZ_SMACH 1000/TASK_MS_SMACH
@@ -40,9 +40,9 @@ static int previousMeters = 0;
 static int previousButtons = 0;
 static int countButtons = 0;
 static int totalTimeButtons = 0;
-static int previousLEDs = 0;
-static int countLEDs = 0;
-static int totalTimeLEDs = 0;
+//static int previousLEDs = 0;
+//static int countLEDs = 0;
+//static int totalTimeLEDs = 0;
 static int previousStateMachine = 0;
 static int countStateMachine = 0;
 static int totalTimeStateMachine = 0;
@@ -94,6 +94,7 @@ void tButtonsCallback() {
   updateButtons();
 }
 
+/*
 void tLEDsCallback() {
   int timeMillis = millis();
   totalTimeLEDs += timeMillis-previousLEDs;
@@ -111,6 +112,7 @@ void tLEDsCallback() {
 
   updateLEDs();
 }
+*/
 
 void tStateMachineCallback() {
   int timeMillis = millis();
@@ -131,8 +133,8 @@ void tStateMachineCallback() {
 }
 
 void setup() {
-  clearSettings();
-  readSettings(&settings);
+  //clearSettings();
+  readSettings();
   
   pinMode(hourPin,   OUTPUT);
   pinMode(minutePin, OUTPUT);
@@ -140,18 +142,19 @@ void setup() {
 
   Serial.begin(57600);
   setupButtons();
-  setupLEDs();
+  //setupLEDs();
+  SetupLEDSerial;
   rtc.setup();
   initStateMachine();
 
   runner.init();
   runner.addTask(tMeters);
   runner.addTask(tButtons);
-  runner.addTask(tLEDs);
+  //runner.addTask(tLEDs);
   runner.addTask(tStateMachine);
   tMeters.enable();
   tButtons.enable();
-  tLEDs.enable();
+  //tLEDs.enable();
   tStateMachine.enable();
   
   Serial.println("Starting...");
