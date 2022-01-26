@@ -13,14 +13,14 @@ showSpacers     = false;
 showBackplates  = false;
 showMeters      = false;
 
-//showBodies      = true;
-//showSpacers     = true;
+showBodies      = true;
+showSpacers     = true;
 showBackplates  = true;
-//showMeters      = true;
+showMeters      = true;
 
 // Volt Meter Cylindrical Housing
 BODY_RADIUS = 1;
-BODY_LENGTH = 80;
+BODY_LENGTH = 82;
 BODY_WIDTH = METER_FLANGE_DIAMETER + 2*BODY_RADIUS;
 WALL_THICKNESS = 10;
 FOOT_WIDTH = 30;
@@ -32,7 +32,7 @@ FOOT_RADIUS = 3;
 // Volt Meter Housing Backplate
 BACKPLATE_MOUNT_WIDTH = BODY_WIDTH;
 BACKPLATE_MOUNT_HEIGHT = 20;
-BACKPLATE_MOUNT_THICKNESS = 10;
+BACKPLATE_MOUNT_THICKNESS = 5;
 BACKPLATE_MOUNT_SCREW_HOLE_DIAMETER = 3.5;
 BACKPLATE_MOUNT_SCREW_HOLE_OFFSET = BODY_WIDTH/2-15;
 BACKPLATE_CLEARANCE = 0.5;
@@ -53,6 +53,8 @@ BUTTON_LIP_CLEARANCE = 0.2;
 //POWER_HOLE_WIDTH = 10;
 POWER_JACK_HOLE_DIAMETER = 11;
 POWER_HOLE_OFFSET = -17;
+USB_HOLE_WIDTH = 15;
+USB_HOLE_HEIGHT = 10;
 
 // Connectors between Volt Meter Housings
 SPACE_BETWEEN_CYLINDERS = 5;  // Distance between outside edges of adjacent meter housings
@@ -64,6 +66,16 @@ SPACER_OFFSET = 5;
 WIRE_RACE_DIAMETER = 12;
 CONNECTOR_SCREW_DIAMETER = 4;
 CONNECTOR_SCREW_SPACING = 20;
+
+CONTROLLER_MOUNT_CLEARANCE = 0.1;
+CONTROLLER_WIDTH = 18.0;
+CONTROLLER_WIDTH_CLEAR = CONTROLLER_WIDTH + CONTROLLER_MOUNT_CLEARANCE;
+CONTROLLER_LENGTH = 35.0;
+CONTROLLER_LENGTH_CLEAR = CONTROLLER_LENGTH + CONTROLLER_MOUNT_CLEARANCE;
+CONTROLLER_THICKNESS = 4.1;
+CONTROLLER_THICKNESS_CLEAR = CONTROLLER_THICKNESS + CONTROLLER_MOUNT_CLEARANCE;
+CONTROLLER_MOUNT_THICKNESS = 3.0;
+CONTROLLER_MOUNT_LIP = 2;
 
 
 //$fn = 40;
@@ -156,7 +168,7 @@ module createSpacers() {
     if (RENDER_MODE==0 && showSpacers)
       createInnerSpacer(CYLINDER_SPACING+xOffset/2,0,SPACER_OFFSET,left=true);
     if (RENDER_MODE==0 && showSpacers)
-      #createInnerSpacer(-CYLINDER_SPACING-xOffset*2.5,0,SPACER_OFFSET,left=false);
+      createInnerSpacer(-CYLINDER_SPACING-xOffset*2.5,0,SPACER_OFFSET,left=false);
   }
 }
 
@@ -186,7 +198,7 @@ module createInnerSpacer(X, Y, Z, left=true) {
               }
 }
 
-/* 
+/*
   Creates an "Outer" spacer. This is the piece that goes between
   the volt meter housings to join them together.
 */
@@ -206,40 +218,40 @@ module createOuterSpacer(X, Y, Z) {
 	};
 }
 
-/* 
+/*
   Instantiates the 3 volt meter housings
 */
 module createBodies() {
 	xOffset = explodeView*EXPLODE_WIDTH;
 
   if ((RENDER_MODE==0 && showBodies) || RENDER_MODE==1)
-  	createBody(0, 0, 0);
+  	createBody(0, 0, 0, 1);
   if ((RENDER_MODE==0 && showBodies) || RENDER_MODE==2)
     createBody(CYLINDER_SPACING+xOffset, 0, 0);
   if ((RENDER_MODE==0 && showBodies) || RENDER_MODE==3)
-    #createBody((CYLINDER_SPACING+xOffset)*2, 0, 0);
+    createBody((CYLINDER_SPACING+xOffset)*2, 0, 0, 1);
 }
 
-/* 
+/*
   Instantiates the 3 volt meter housing backplates.
 */
 module createBackplates() {
   xOffset = explodeView*EXPLODE_WIDTH;
 
   if ((RENDER_MODE==0 && showBackplates) || RENDER_MODE==4)
-    createBackplate(0, 0, -xOffset, power=false, buttons=true, buttonLabels=["+","-"]);
+    createBackplate(0, 0, -xOffset, power=false, usb=true, buttons=true, buttonLabels=["+","-"]);
 
   if ((RENDER_MODE==0 && showBackplates) || RENDER_MODE==5)
-    createBackplate(CYLINDER_SPACING+xOffset, 0, -xOffset, power=false, buttons=true, buttonLabels=["H","M"]);
+    createBackplate(CYLINDER_SPACING+xOffset, 0, -xOffset, power=true, usb=false, buttons=true, buttonLabels=["H","M"]);
 
   if ((RENDER_MODE==0 && showBackplates) || RENDER_MODE==6)
-    #createBackplate((CYLINDER_SPACING+xOffset)*2, 0, -xOffset, power=true, buttons=true, buttonLabels=["1","2"]);
+    createBackplate((CYLINDER_SPACING+xOffset)*2, 0, -xOffset, power=false, usb=true, buttons=true, buttonLabels=["1","2"]);
 }
 
-/* 
+/*
   This function creates a volt meter housing.
 */
-module createBody(X, Y, Z) {
+module createBody(X, Y, Z, controller=0) {
   meterXOffset = explodeView*(METER_BODY_DEPTH + EXPLODE_WIDTH);
 
 	translate([X,Y,Z]) {
@@ -269,7 +281,7 @@ module createBody(X, Y, Z) {
             createBackplateMount();
 
         rotate([0,0,180])
-            createBackplateMount();
+            createBackplateMount(controllerMount=controller);
       }
     }
 	}
@@ -298,16 +310,22 @@ module createInnerBody() {
   Create a surface for the backplate to rest against and be
   screwed to.
 */
-module createBackplateMount() {
+module createBackplateMount(controllerMount=0) {
+  mountLength = BACKPLATE_MOUNT_THICKNESS + (controllerMount*(CONTROLLER_LENGTH_CLEAR+CONTROLLER_MOUNT_THICKNESS-BACKPLATE_MOUNT_THICKNESS));
+
   difference() {
     intersection() {
-      translate([-BACKPLATE_MOUNT_WIDTH/2,BODY_WIDTH/2-BACKPLATE_MOUNT_HEIGHT,BACKPLATE_THICKNESS])
-        roundedCube(length=BACKPLATE_MOUNT_THICKNESS, width=BACKPLATE_MOUNT_HEIGHT, height=BACKPLATE_MOUNT_WIDTH, radius=2);
+      union() {
+        translate([-BACKPLATE_MOUNT_WIDTH/2,BODY_WIDTH/2-BACKPLATE_MOUNT_HEIGHT,BACKPLATE_THICKNESS])
+          roundedCube(length=mountLength, width=BACKPLATE_MOUNT_HEIGHT, height=BACKPLATE_MOUNT_WIDTH, radius=2);
+        if (controllerMount == 1)
+          createControllerMount(mountLength);
+      }
       createInnerBody();
     }
 
     translate([0,BACKPLATE_MOUNT_SCREW_HOLE_OFFSET,1])
-      cylinder(d=BACKPLATE_MOUNT_SCREW_HOLE_DIAMETER, h=BACKPLATE_MOUNT_THICKNESS+2);
+      cylinder(d=BACKPLATE_MOUNT_SCREW_HOLE_DIAMETER, h=mountLength+2);
   }
 }
 
@@ -381,7 +399,7 @@ module roundedCylinder(diam, hgt, radius) {
   Generate a backplate. The backplate is configurable. It can be with
   or without louvers, buttons, button labels or a hole for the power cord.
 */
-module createBackplate(X, Y, Z, louvers=true, buttons=true, power=true, buttons=true, buttonLabels) {
+module createBackplate(X, Y, Z, louvers=true, buttons=true, power=true, usb=true, buttons=true, buttonLabels) {
   xOffset = explodeView*EXPLODE_WIDTH/2;
 
   translate([X,Y,Z]) {
@@ -445,6 +463,11 @@ module createBackplate(X, Y, Z, louvers=true, buttons=true, power=true, buttons=
           rotate([0,0,90])
             cylinder(d=POWER_JACK_HOLE_DIAMETER, h=BACKPLATE_THICKNESS+2);
   					//roundedCube(length=POWER_HOLE_LENGTH, width=POWER_HOLE_WIDTH, height=BACKPLATE_THICKNESS+2, radius=1);
+
+      if (usb)
+        translate([0,-20,BACKPLATE_THICKNESS/2])
+          rotate([0,0,0])
+            cube([USB_HOLE_WIDTH, USB_HOLE_HEIGHT, BACKPLATE_THICKNESS+2],center=true);
   	}
 
     if (buttons && RENDER_MODE==0) {
@@ -502,3 +525,27 @@ module createMeters() {
 
   }
 }
+
+module createControllerMount(length) {
+  //length = CONTROLLER_LENGTH_CLEAR + CONTROLLER_MOUNT_THICKNESS;
+  width = CONTROLLER_WIDTH_CLEAR + 2*CONTROLLER_MOUNT_THICKNESS;
+  thickness = CONTROLLER_THICKNESS_CLEAR + CONTROLLER_MOUNT_THICKNESS;
+  vertOffset = BODY_WIDTH/2-BACKPLATE_MOUNT_HEIGHT-thickness;
+
+  openingWidth = CONTROLLER_WIDTH-2*CONTROLLER_MOUNT_LIP;
+  openingLength = CONTROLLER_LENGTH-CONTROLLER_MOUNT_LIP;
+
+  //translate([-BACKPLATE_MOUNT_WIDTH/2,BODY_WIDTH/2-BACKPLATE_MOUNT_HEIGHT,BACKPLATE_THICKNESS])
+  translate([-width/2,vertOffset,BACKPLATE_THICKNESS])
+    difference() {
+      //SmoothCube([width, thickness+5, length],2);
+      roundedCube(length, thickness+5, width, 2);
+      translate([CONTROLLER_MOUNT_THICKNESS+CONTROLLER_MOUNT_LIP,-0.5,-1])
+        cube([openingWidth,CONTROLLER_MOUNT_THICKNESS+1,openingLength+1]);
+      translate([CONTROLLER_MOUNT_THICKNESS,CONTROLLER_MOUNT_THICKNESS,-1])
+        cube([CONTROLLER_WIDTH_CLEAR, CONTROLLER_THICKNESS_CLEAR, CONTROLLER_LENGTH_CLEAR+1]);
+    }
+}
+
+
+
